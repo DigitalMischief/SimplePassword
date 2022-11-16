@@ -1,0 +1,8 @@
+name: SimplePassword
+version: '${version}'
+main: com.llamalabb.simplepassword.simplepassword.SimplePassword
+api-version: 1.19
+commands:
+  deauthme:
+    description: Deauthenticates player and kicks them from server
+    usage: /<command>

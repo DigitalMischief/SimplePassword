@@ -1,0 +1,115 @@
+package com.llamalabb.simplepassword.simplepassword
+
+import io.papermc.paper.event.player.AsyncChatEvent
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.TextComponent
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.Style
+import net.kyori.adventure.text.format.TextDecoration
+import org.bukkit.Bukkit
+import org.bukkit.GameMode
+import org.bukkit.NamespacedKey
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.persistence.PersistentDataType
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType
+import org.bukkit.scheduler.BukkitRunnable
+
+
+class PlayerAuthWorker : Listener {
+
+    @EventHandler
+    fun onPlayerJoin(event: PlayerJoinEvent) {
+        if (!isPlayerAuthed(event.player)) {
+            freezePlayer(event.player)
+        } else {
+            unfreezePlayer(event.player)
+        }
+    }
+
+    @EventHandler
+    fun onChatListener(event: AsyncChatEvent) {
+        if (!isPlayerAuthed(event.player)) {
+            // if they aren't authed all of their chat messages are cancelled
+            // this is so password attempts aren't logged but also so that they can't chat
+            event.isCancelled = true
+
+            // get the content of the chat message
+            val message = (event.originalMessage() as TextComponent).content()
+
+            // check if the content of the chat message is the password and kick / auth accordingly
+            if (message == "serverpw") {
+                setPlayerAuth(event.player, true)
+                Bukkit.getScheduler().runTask(Main.plugin, Runnable { unfreezePlayer(event.player) })
+            } else {
+                setPlayerAuth(event.player, false)
+                Bukkit.getScheduler().runTask(Main.plugin, Runnable { event.player.kick() })
+            }
+        }
+    }
+
+    private fun freezePlayer(player: Player) {
+        player.gameMode = GameMode.SPECTATOR
+
+        // Spawns an ArmorStand at player location and forces player to spectate the ArmorStand
+        val armorStand = player.world.spawnEntity(player.location, EntityType.ARMOR_STAND) as ArmorStand
+        armorStand.isInvisible = true
+        armorStand.isCollidable = false
+        player.spectatorTarget = armorStand
+
+        // gives the player a blindness effect
+        player.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20 * 65, 1))
+
+        // send a password prompt to the player
+        sendPasswordPrompt(player)
+
+        // kick player after 60 seconds if they haven't authenticated
+        object : BukkitRunnable() {
+            override fun run() { if (!isPlayerAuthed(player)) player.kick() }
+        }.runTaskLater(Main.plugin, 20*60)
+
+        // remove the spawned armor stand after 75 seconds
+        object : BukkitRunnable() {
+            override fun run() { armorStand.remove() }
+        }.runTaskLater(Main.plugin, 20*75)
+    }
+
+    private fun unfreezePlayer(player: Player) {
+        player.gameMode = GameMode.SURVIVAL
+        player.removePotionEffect(PotionEffectType.BLINDNESS)
+    }
+
+    private fun sendPasswordPrompt(player: Player) {
+        val messageStyle = Style.style()
+            .color(NamedTextColor.DARK_RED)
+            .decorate(TextDecoration.BOLD)
+            .decorate(TextDecoration.UNDERLINED)
+            .build()
+
+        val message = Component
+            .text("Please enter the password in chat, you will be kicked in 60 seconds...")
+            .style(messageStyle)
+
+        player.sendMessage(message)
+    }
+
+    companion object {
+        private val PLAYER_DATA_AUTH_KEY = NamespacedKey(Main.plugin, "player_data_auth_key")
+
+        fun isPlayerAuthed(player: Player): Boolean {
+            return player.persistentDataContainer
+                .getOrDefault(PLAYER_DATA_AUTH_KEY, PersistentDataType.INTEGER, 0)
+                .let { if(it == 1) return@let true else false }
+        }
+
+        fun setPlayerAuth(player: Player, isAuth: Boolean) {
+            player.persistentDataContainer
+                .set(PLAYER_DATA_AUTH_KEY, PersistentDataType.INTEGER, if(isAuth) 1 else 0)
+        }
+    }
+}
