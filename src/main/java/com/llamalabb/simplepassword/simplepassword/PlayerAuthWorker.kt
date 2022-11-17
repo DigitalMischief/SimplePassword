@@ -14,8 +14,14 @@ import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.inventory.InventoryInteractEvent
+import org.bukkit.event.inventory.InventoryOpenEvent
+import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.player.PlayerCommandSendEvent
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.scheduler.BukkitRunnable
@@ -24,7 +30,7 @@ import java.time.Duration
 
 class PlayerAuthWorker : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun onPlayerJoin(event: PlayerJoinEvent) {
         if (!isPlayerAuthed(event.player)) {
             freezePlayer(event.player)
@@ -46,7 +52,10 @@ class PlayerAuthWorker : Listener {
             // check if the content of the chat message is the password and kick / auth accordingly
             if (message == "serverpw") {
                 setPlayerAuth(event.player, true)
-                Bukkit.getScheduler().runTask(Main.plugin, Runnable { unfreezePlayer(event.player) })
+                Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                    unfreezePlayer(event.player)
+                    showPasswordCorrect(event.player)
+                })
             } else {
                 setPlayerAuth(event.player, false)
                 Bukkit.getScheduler().runTask(Main.plugin, Runnable { event.player.kick() })
@@ -57,6 +66,20 @@ class PlayerAuthWorker : Listener {
     @EventHandler
     fun onPlayerToggleSneak(event: PlayerToggleSneakEvent) {
         // this is a bit of a hacky way to ensure a user cannot leave their spectateTarget
+        if (!isPlayerAuthed(event.player)) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPlayerTeleport(event: PlayerTeleportEvent) {
+        if (!isPlayerAuthed(event.player)) {
+            event.isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun onPlayerCommand(event: PlayerCommandPreprocessEvent) {
         if (!isPlayerAuthed(event.player)) {
             event.isCancelled = true
         }
@@ -87,7 +110,6 @@ class PlayerAuthWorker : Listener {
 
     private fun unfreezePlayer(player: Player) {
         player.gameMode = GameMode.SURVIVAL
-        showPasswordCorrect(player)
     }
 
     private fun showPasswordPrompt(player: Player) {
