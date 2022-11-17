@@ -11,18 +11,13 @@ import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.ArmorStand
-import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerTeleportEvent
-import org.bukkit.event.player.PlayerToggleFlightEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
 import java.time.Duration
 
@@ -39,7 +34,7 @@ class PlayerAuthWorker : Listener {
     }
 
     @EventHandler
-    fun onChatListener(event: AsyncChatEvent) {
+    fun onPlayerChat(event: AsyncChatEvent) {
         if (!isPlayerAuthed(event.player)) {
             // if they aren't authed all of their chat messages are cancelled
             // this is so password attempts aren't logged but also so that they can't chat
@@ -60,7 +55,7 @@ class PlayerAuthWorker : Listener {
     }
 
     @EventHandler
-    fun playToggleSneakListener(event: PlayerToggleSneakEvent) {
+    fun onPlayerToggleSneak(event: PlayerToggleSneakEvent) {
         // this is a bit of a hacky way to ensure a user cannot leave their spectateTarget
         if (!isPlayerAuthed(event.player)) {
             event.isCancelled = true
