@@ -6,6 +6,7 @@ import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
@@ -19,6 +20,7 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
 import org.bukkit.scheduler.BukkitRunnable
+import java.time.Duration
 
 
 class PlayerAuthWorker : Listener {
@@ -66,7 +68,7 @@ class PlayerAuthWorker : Listener {
         player.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20 * 65, 1))
 
         // send a password prompt to the player
-        sendPasswordPrompt(player)
+        showPasswordPrompt(player)
 
         // kick player after 60 seconds if they haven't authenticated
         object : BukkitRunnable() {
@@ -84,18 +86,37 @@ class PlayerAuthWorker : Listener {
         player.removePotionEffect(PotionEffectType.BLINDNESS)
     }
 
-    private fun sendPasswordPrompt(player: Player) {
-        val messageStyle = Style.style()
+    private fun showPasswordPrompt(player: Player) {
+
+        val titleStyle = Style.style()
             .color(NamedTextColor.DARK_RED)
             .decorate(TextDecoration.BOLD)
             .decorate(TextDecoration.UNDERLINED)
             .build()
 
-        val message = Component
-            .text("Please enter the password in chat, you will be kicked in 60 seconds...")
-            .style(messageStyle)
+        val subtitleStyle = Style.style()
+            .color(NamedTextColor.YELLOW)
+            .build()
 
-        player.sendMessage(message)
+        val titleComponent = Component
+            .text("Please enter password")
+            .style(titleStyle)
+
+        val subtitleComponent = Component
+            .text("Enter the server password into chat")
+            .style(subtitleStyle)
+
+        val title = Title.title(
+            titleComponent,
+            subtitleComponent,
+            Title.Times.times(
+                Duration.ZERO,
+                Duration.ofSeconds(65),
+                Duration.ZERO
+            )
+        )
+
+        player.showTitle(title)
     }
 
     companion object {

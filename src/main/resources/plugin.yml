@@ -1,6 +1,6 @@
 name: SimplePassword
 version: '${version}'
-main: com.llamalabb.simplepassword.simplepassword.SimplePassword
+main: com.llamalabb.simplepassword.simplepassword.Main
 api-version: 1.19
 commands:
   deauthme:
