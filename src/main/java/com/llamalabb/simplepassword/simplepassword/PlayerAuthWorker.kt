@@ -11,11 +11,15 @@ import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.NamespacedKey
 import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Entity
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
+import org.bukkit.event.player.PlayerTeleportEvent
+import org.bukkit.event.player.PlayerToggleFlightEvent
+import org.bukkit.event.player.PlayerToggleSneakEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType
@@ -55,6 +59,14 @@ class PlayerAuthWorker : Listener {
         }
     }
 
+    @EventHandler
+    fun playToggleSneakListener(event: PlayerToggleSneakEvent) {
+        // this is a bit of a hacky way to ensure a user cannot leave their spectateTarget
+        if (!isPlayerAuthed(event.player)) {
+            event.isCancelled = true
+        }
+    }
+
     private fun freezePlayer(player: Player) {
         player.gameMode = GameMode.SPECTATOR
 
@@ -63,9 +75,6 @@ class PlayerAuthWorker : Listener {
         armorStand.isInvisible = true
         armorStand.isCollidable = false
         player.spectatorTarget = armorStand
-
-        // gives the player a blindness effect
-        player.addPotionEffect(PotionEffect(PotionEffectType.BLINDNESS, 20 * 65, 1))
 
         // send a password prompt to the player
         showPasswordPrompt(player)
@@ -83,14 +92,13 @@ class PlayerAuthWorker : Listener {
 
     private fun unfreezePlayer(player: Player) {
         player.gameMode = GameMode.SURVIVAL
-        player.removePotionEffect(PotionEffectType.BLINDNESS)
+        showPasswordCorrect(player)
     }
 
     private fun showPasswordPrompt(player: Player) {
 
         val titleStyle = Style.style()
             .color(NamedTextColor.DARK_RED)
-            .decorate(TextDecoration.BOLD)
             .decorate(TextDecoration.UNDERLINED)
             .build()
 
@@ -112,6 +120,29 @@ class PlayerAuthWorker : Listener {
             Title.Times.times(
                 Duration.ZERO,
                 Duration.ofSeconds(65),
+                Duration.ZERO
+            )
+        )
+
+        player.showTitle(title)
+    }
+
+    private fun showPasswordCorrect(player: Player) {
+
+        val titleStyle = Style.style()
+            .color(NamedTextColor.GREEN)
+            .build()
+
+        val titleComponent = Component
+            .text("Success!")
+            .style(titleStyle)
+
+        val title = Title.title(
+            titleComponent,
+            Component.text(""),
+            Title.Times.times(
+                Duration.ZERO,
+                Duration.ofSeconds(3),
                 Duration.ZERO
             )
         )
