@@ -89,7 +89,8 @@ class PlayerAuthWorker : Listener {
         player.gameMode = GameMode.SPECTATOR
 
         // Spawns an ArmorStand at player location and forces player to spectate the ArmorStand
-        val armorStand = player.world.spawnEntity(player.location, EntityType.ARMOR_STAND) as ArmorStand
+        val armorStand = Bukkit.getWorld(player.world.uid)
+            ?.spawnEntity(player.location, EntityType.ARMOR_STAND) as ArmorStand
         armorStand.isInvisible = true
         armorStand.isCollidable = false
         player.spectatorTarget = armorStand
