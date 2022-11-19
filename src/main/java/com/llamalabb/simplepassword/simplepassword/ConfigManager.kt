@@ -7,9 +7,8 @@ import java.io.OutputStreamWriter
 import java.util.Properties
 
 object ConfigManager {
-    private val runTimePath =
-        (ConfigManager.javaClass.protectionDomain.codeSource.location.toURI()).path + "/SimplePassword"
-    private const val CONFIG_FILE_PATH = "config.properties"
+    private const val MAIN_DIR = "plugins/SimplePassword"
+    private const val CONFIG_FILE_PATH = "${MAIN_DIR}/config.properties"
     private const val PASSWORD_KEY = "password"
     private const val DEFAULT_PASSWORD = "serverpw"
 
@@ -19,9 +18,8 @@ object ConfigManager {
         return if (File(CONFIG_FILE_PATH).exists()) {
             Properties().apply { load(FileInputStream(CONFIG_FILE_PATH)) }
         } else {
-            File(runTimePath).mkdirs()
-            val file = File(runTimePath, CONFIG_FILE_PATH).apply { createNewFile() }
-            println(file.absolutePath)
+            File(MAIN_DIR).mkdirs()
+            val file = File(CONFIG_FILE_PATH).apply { createNewFile() }
             Properties().apply {
                 setProperty(PASSWORD_KEY, DEFAULT_PASSWORD)
                 store(OutputStreamWriter(FileOutputStream(file)), "")
