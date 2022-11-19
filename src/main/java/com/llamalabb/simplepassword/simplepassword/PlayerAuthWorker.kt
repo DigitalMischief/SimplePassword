@@ -50,7 +50,7 @@ class PlayerAuthWorker : Listener {
             val message = (event.originalMessage() as TextComponent).content()
 
             // check if the content of the chat message is the password and kick / auth accordingly
-            if (message == "serverpw") {
+            if (message == ConfigManager.getPassword()) {
                 setPlayerAuth(event.player, true)
                 Bukkit.getScheduler().runTask(Main.plugin, Runnable {
                     unfreezePlayer(event.player)
