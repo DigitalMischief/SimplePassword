@@ -18,9 +18,10 @@ object ConfigManager {
         return if (File(CONFIG_FILE_PATH).exists()) {
             Properties().apply { load(FileInputStream(CONFIG_FILE_PATH)) }
         } else {
+            val file = File(CONFIG_FILE_PATH).apply { createNewFile() }
             Properties().apply {
-                set(PASSWORD_KEY, DEFAULT_PASSWORD)
-                store(OutputStreamWriter(FileOutputStream(File(CONFIG_FILE_PATH))), "")
+                setProperty(PASSWORD_KEY, DEFAULT_PASSWORD)
+                store(OutputStreamWriter(FileOutputStream(file)), "")
             }
         }
     }
