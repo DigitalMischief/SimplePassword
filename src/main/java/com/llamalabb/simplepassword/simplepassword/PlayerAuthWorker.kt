@@ -87,12 +87,7 @@ class PlayerAuthWorker : Listener {
 
     private fun freezePlayer(player: Player) {
         player.gameMode = GameMode.SPECTATOR
-
-        // Spawns an ArmorStand at player location and forces player to spectate the ArmorStand
-        val armorStand = Bukkit.getWorld(player.world.uid)
-            ?.spawnEntity(player.location, EntityType.ARMOR_STAND) as ArmorStand
-        armorStand.isInvisible = true
-        armorStand.isCollidable = false
+        val armorStand = createArmorStand(player)
         player.spectatorTarget = armorStand
 
         // send a password prompt to the player
@@ -166,6 +161,17 @@ class PlayerAuthWorker : Listener {
         )
 
         player.showTitle(title)
+    }
+
+    private fun createArmorStand(player: Player): ArmorStand {
+        // Spawns an ArmorStand at player location and forces player to spectate the ArmorStand
+        return (player.world.spawnEntity(player.location, EntityType.ARMOR_STAND) as ArmorStand).apply {
+            isInvisible = true
+            isCollidable = false
+            isInvulnerable = true
+            isVisible = false
+            setGravity(false)
+        }
     }
 
     companion object {

@@ -12,19 +12,24 @@ object ConfigManager {
     private const val PASSWORD_KEY = "password"
     private const val DEFAULT_PASSWORD = "serverpw"
 
-    private val config by lazy { initializeConfig() }
+    private val config = Properties()
 
-    private fun initializeConfig(): Properties {
+    private fun initConfig(): Properties {
         return if (File(CONFIG_FILE_PATH).exists()) {
-            Properties().apply { load(FileInputStream(CONFIG_FILE_PATH)) }
+            config.apply { load(FileInputStream(CONFIG_FILE_PATH)) }
         } else {
-            File(MAIN_DIR).mkdirs()
             val file = File(CONFIG_FILE_PATH).apply { createNewFile() }
-            Properties().apply {
+            config.apply {
                 setProperty(PASSWORD_KEY, DEFAULT_PASSWORD)
                 store(OutputStreamWriter(FileOutputStream(file)), "")
             }
         }
+    }
+
+   fun initLocalStorage() {
+       val mainDir = File(MAIN_DIR)
+       if (!mainDir.exists()) mainDir.mkdir()
+       initConfig()
     }
 
     fun getPassword() = config[PASSWORD_KEY]
