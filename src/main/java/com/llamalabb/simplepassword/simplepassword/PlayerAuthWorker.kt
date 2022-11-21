@@ -48,23 +48,31 @@ class PlayerAuthWorker : Listener {
 
             // check if the content of the chat message is the password and kick / auth accordingly
             if (message == ConfigRepo.getPassword()) {
-                setPlayerAuth(event.player, true)
-                PlayerSessionRepo.resetPlayerAttempts(event.player)
-                Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-                    unfreezePlayer(event.player)
-                    showPasswordCorrect(event.player)
-                })
+                authenticatePlayer(event.player)
             } else {
-                setPlayerAuth(event.player, false)
-                if (PlayerSessionRepo.getAttemptsRemaining(event.player) == 0) {
-                    Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-                        event.player.banPlayer("Too many incorrect password attempts")
-                    })
-                } else {
-                    PlayerSessionRepo.decrementAttempt(event.player)
-                    showWrongPassword(event.player)
-                }
+                incorrectPasswordAttempt(event.player)
             }
+        }
+    }
+
+    private fun authenticatePlayer(player: Player) {
+        Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+            setPlayerAuth(player, true)
+            PlayerSessionRepo.resetPlayerAttempts(player)
+            unfreezePlayer(player)
+            showPasswordCorrect(player)
+        })
+    }
+
+    private fun incorrectPasswordAttempt(player: Player) {
+        setPlayerAuth(player, false)
+        if (PlayerSessionRepo.getAttemptsRemaining(player) == 0) {
+            Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                player.banPlayer("Too many incorrect password attempts")
+            })
+        } else {
+            PlayerSessionRepo.decrementAttempt(player)
+            showWrongPassword(player)
         }
     }
 
