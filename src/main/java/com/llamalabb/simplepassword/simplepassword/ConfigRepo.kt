@@ -6,11 +6,12 @@ import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.Properties
 
-object ConfigManager {
+object ConfigRepo {
     private const val MAIN_DIR = "plugins/SimplePassword"
     private const val CONFIG_FILE_PATH = "${MAIN_DIR}/config.properties"
     private const val PASSWORD_KEY = "password"
     private const val DEFAULT_PASSWORD = "serverpw"
+    private const val DEFAULT_ATTEMPTS = 3
 
     private val config = Properties()
 
@@ -33,4 +34,6 @@ object ConfigManager {
     }
 
     fun getPassword() = config[PASSWORD_KEY]
+
+    fun getAttempts() = DEFAULT_ATTEMPTS
 }

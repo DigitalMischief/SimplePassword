@@ -11,7 +11,7 @@ class Main : JavaPlugin() {
 
     override fun onEnable() {
         plugin = this
-        ConfigManager.initLocalStorage()
+        ConfigRepo.initLocalStorage()
         val pm = Bukkit.getPluginManager()
         pm.registerEvents(PlayerAuthWorker(), this)
         getCommand(Commands.DEAUTH_COMMAND)?.setExecutor(Commands())

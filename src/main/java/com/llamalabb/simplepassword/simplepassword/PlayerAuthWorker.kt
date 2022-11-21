@@ -16,10 +16,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.inventory.InventoryInteractEvent
-import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
-import org.bukkit.event.player.PlayerCommandSendEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerTeleportEvent
 import org.bukkit.event.player.PlayerToggleSneakEvent
@@ -50,7 +47,7 @@ class PlayerAuthWorker : Listener {
             val message = (event.originalMessage() as TextComponent).content()
 
             // check if the content of the chat message is the password and kick / auth accordingly
-            if (message == ConfigManager.getPassword()) {
+            if (message == ConfigRepo.getPassword()) {
                 setPlayerAuth(event.player, true)
                 Bukkit.getScheduler().runTask(Main.plugin, Runnable {
                     unfreezePlayer(event.player)
