@@ -55,27 +55,6 @@ class PlayerAuthWorker : Listener {
         }
     }
 
-    private fun authenticatePlayer(player: Player) {
-        Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-            setPlayerAuth(player, true)
-            PlayerSessionRepo.resetPlayerAttempts(player)
-            unfreezePlayer(player)
-            showPasswordCorrect(player)
-        })
-    }
-
-    private fun incorrectPasswordAttempt(player: Player) {
-        setPlayerAuth(player, false)
-        if (PlayerSessionRepo.getAttemptsRemaining(player) == 0) {
-            Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-                player.banPlayer("Too many incorrect password attempts")
-            })
-        } else {
-            PlayerSessionRepo.decrementAttempt(player)
-            showWrongPassword(player)
-        }
-    }
-
     @EventHandler
     fun onPlayerToggleSneak(event: PlayerToggleSneakEvent) {
         // this is a bit of a hacky way to ensure a user cannot leave their spectateTarget
@@ -95,6 +74,27 @@ class PlayerAuthWorker : Listener {
     fun onPlayerCommand(event: PlayerCommandPreprocessEvent) {
         if (!isPlayerAuthed(event.player)) {
             event.isCancelled = true
+        }
+    }
+
+    private fun authenticatePlayer(player: Player) {
+        Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+            setPlayerAuth(player, true)
+            PlayerSessionRepo.resetPlayerAttempts(player)
+            unfreezePlayer(player)
+            showPasswordCorrect(player)
+        })
+    }
+
+    private fun incorrectPasswordAttempt(player: Player) {
+        setPlayerAuth(player, false)
+        if (PlayerSessionRepo.getAttemptsRemaining(player) == 0) {
+            Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                player.banPlayer("Too many incorrect password attempts")
+            })
+        } else {
+            PlayerSessionRepo.decrementAttempt(player)
+            showWrongPassword(player)
         }
     }
 
