@@ -55,7 +55,14 @@ class PlayerAuthWorker : Listener {
                 })
             } else {
                 setPlayerAuth(event.player, false)
-                Bukkit.getScheduler().runTask(Main.plugin, Runnable { event.player.kick() })
+                if (PlayerSessionRepo.getAttemptsRemaining(event.player) == 0) {
+                    Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                        event.player.banPlayer("Too many incorrect password attempts")
+                    })
+                } else {
+                    PlayerSessionRepo.decrementAttempt(event.player)
+                    showWrongPassword(event.player)
+                }
             }
         }
     }
@@ -122,6 +129,38 @@ class PlayerAuthWorker : Listener {
 
         val subtitleComponent = Component
             .text("Enter the server password into chat")
+            .style(subtitleStyle)
+
+        val title = Title.title(
+            titleComponent,
+            subtitleComponent,
+            Title.Times.times(
+                Duration.ZERO,
+                Duration.ofSeconds(65),
+                Duration.ZERO
+            )
+        )
+
+        player.showTitle(title)
+    }
+
+    private fun showWrongPassword(player: Player) {
+
+        val titleStyle = Style.style()
+            .color(NamedTextColor.DARK_RED)
+            .decorate(TextDecoration.UNDERLINED)
+            .build()
+
+        val subtitleStyle = Style.style()
+            .color(NamedTextColor.GRAY)
+            .build()
+
+        val titleComponent = Component
+            .text("Incorrect Password")
+            .style(titleStyle)
+
+        val subtitleComponent = Component
+            .text("${PlayerSessionRepo.getAttemptsRemaining(player)} attempts remaining")
             .style(subtitleStyle)
 
         val title = Title.title(

@@ -2,6 +2,7 @@ package com.llamalabb.simplepassword.simplepassword
 
 import org.bukkit.entity.Player
 import java.util.UUID
+import kotlin.math.max
 
 object PlayerSessionRepo {
     private val uuidToAttemptsRemaining = HashMap<UUID, Int>()
@@ -18,7 +19,7 @@ object PlayerSessionRepo {
     }
 
     fun decrementAttempt(player: Player) {
-        uuidToAttemptsRemaining[player.uniqueId] =
-            uuidToAttemptsRemaining[player.uniqueId]?.dec() ?: (ConfigRepo.getAttempts() - 1)
+        val newValue = max(0, uuidToAttemptsRemaining[player.uniqueId]?.dec() ?: (ConfigRepo.getAttempts() - 1))
+        uuidToAttemptsRemaining[player.uniqueId] = newValue
     }
 }

@@ -10,8 +10,9 @@ object ConfigRepo {
     private const val MAIN_DIR = "plugins/SimplePassword"
     private const val CONFIG_FILE_PATH = "${MAIN_DIR}/config.properties"
     private const val PASSWORD_KEY = "password"
+    private const val PASSWORD_ATTEMPTS_KEY = "password_attempts"
     private const val DEFAULT_PASSWORD = "serverpw"
-    private const val DEFAULT_ATTEMPTS = 3
+    private const val DEFAULT_ATTEMPTS = 5
 
     private val config = Properties()
 
@@ -22,6 +23,7 @@ object ConfigRepo {
             val file = File(CONFIG_FILE_PATH).apply { createNewFile() }
             config.apply {
                 setProperty(PASSWORD_KEY, DEFAULT_PASSWORD)
+                setProperty(PASSWORD_ATTEMPTS_KEY, DEFAULT_ATTEMPTS.toString())
                 store(OutputStreamWriter(FileOutputStream(file)), "")
             }
         }
@@ -35,5 +37,5 @@ object ConfigRepo {
 
     fun getPassword() = config[PASSWORD_KEY]
 
-    fun getAttempts() = DEFAULT_ATTEMPTS
+    fun getAttempts(): Int = (config[PASSWORD_ATTEMPTS_KEY] as? String)?.toInt() ?: DEFAULT_ATTEMPTS
 }
