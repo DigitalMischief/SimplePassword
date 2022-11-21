@@ -49,6 +49,7 @@ class PlayerAuthWorker : Listener {
             // check if the content of the chat message is the password and kick / auth accordingly
             if (message == ConfigRepo.getPassword()) {
                 setPlayerAuth(event.player, true)
+                PlayerSessionRepo.resetPlayerAttempts(event.player)
                 Bukkit.getScheduler().runTask(Main.plugin, Runnable {
                     unfreezePlayer(event.player)
                     showPasswordCorrect(event.player)

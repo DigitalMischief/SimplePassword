@@ -11,6 +11,10 @@ object PlayerSessionRepo {
         uuidToAttemptsRemaining[player.uniqueId] = ConfigRepo.getAttempts()
     }
 
+    fun resetPlayerAttempts(player: Player) {
+        uuidToAttemptsRemaining.remove(player.uniqueId)
+    }
+
     fun getAttemptsRemaining(player: Player): Int {
         return uuidToAttemptsRemaining[player.uniqueId] ?: run {
             setNewPlayer(player)
