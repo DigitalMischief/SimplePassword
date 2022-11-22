@@ -47,7 +47,7 @@ class PlayerAuthWorker : Listener {
             val message = (event.originalMessage() as TextComponent).content()
 
             // check if the content of the chat message is the password and kick / auth accordingly
-            if (message == ConfigRepo.getPassword()) {
+            if (message == ConfigDataSource.getPassword()) {
                 authenticatePlayer(event.player)
             } else {
                 incorrectPasswordAttempt(event.player)
@@ -80,7 +80,7 @@ class PlayerAuthWorker : Listener {
     private fun authenticatePlayer(player: Player) {
         Bukkit.getScheduler().runTask(Main.plugin, Runnable {
             setPlayerAuth(player, true)
-            PlayerSessionRepo.resetPlayerAttempts(player)
+            PlayerSessionDataSource.resetPlayerAttempts(player)
             unfreezePlayer(player)
             showPasswordCorrect(player)
         })
@@ -88,12 +88,12 @@ class PlayerAuthWorker : Listener {
 
     private fun incorrectPasswordAttempt(player: Player) {
         setPlayerAuth(player, false)
-        if (PlayerSessionRepo.getAttemptsRemaining(player) == 0) {
+        if (PlayerSessionDataSource.getAttemptsRemaining(player) == 0) {
             Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-                player.banPlayer("Too many incorrect password attempts")
+                player.banPlayer(ConfigDataSource.getBanMessage())
             })
         } else {
-            PlayerSessionRepo.decrementAttempt(player)
+            PlayerSessionDataSource.decrementAttempt(player)
             showWrongPassword(player)
         }
     }
@@ -133,11 +133,11 @@ class PlayerAuthWorker : Listener {
             .build()
 
         val titleComponent = Component
-            .text("Please enter password")
+            .text(ConfigDataSource.getPasswordPromptTitle())
             .style(titleStyle)
 
         val subtitleComponent = Component
-            .text("Enter the server password into chat")
+            .text(ConfigDataSource.getPasswordPromptSubtitle())
             .style(subtitleStyle)
 
         val title = Title.title(
@@ -165,12 +165,13 @@ class PlayerAuthWorker : Listener {
             .build()
 
         val titleComponent = Component
-            .text("Incorrect Password")
+            .text(ConfigDataSource.getPasswordIncorrectTitle())
             .style(titleStyle)
 
-        val subtitleComponent = Component
-            .text("${PlayerSessionRepo.getAttemptsRemaining(player)} attempts remaining")
-            .style(subtitleStyle)
+        val subtitleComponent = Component.text(ConfigDataSource.getPasswordIncorrectSubtitle().replace(
+            ConfigDataSource.ATTEMPTS_REPLACEMENT_KEY,
+            PlayerSessionDataSource.getAttemptsRemaining(player).toString()
+        )).style(subtitleStyle)
 
         val title = Title.title(
             titleComponent,
@@ -192,12 +193,12 @@ class PlayerAuthWorker : Listener {
             .build()
 
         val titleComponent = Component
-            .text("Success!")
+            .text(ConfigDataSource.getPasswordSuccessTitle())
             .style(titleStyle)
 
         val title = Title.title(
             titleComponent,
-            Component.text(""),
+            Component.text(ConfigDataSource.getPasswordSuccessSubtitle()),
             Title.Times.times(
                 Duration.ZERO,
                 Duration.ofSeconds(3),

@@ -4,11 +4,11 @@ import org.bukkit.entity.Player
 import java.util.UUID
 import kotlin.math.max
 
-object PlayerSessionRepo {
+object PlayerSessionDataSource {
     private val uuidToAttemptsRemaining = HashMap<UUID, Int>()
 
     private fun setNewPlayer(player: Player) {
-        uuidToAttemptsRemaining[player.uniqueId] = ConfigRepo.getAttempts()
+        uuidToAttemptsRemaining[player.uniqueId] = ConfigDataSource.getMaximumAttempts()
     }
 
     fun resetPlayerAttempts(player: Player) {
@@ -18,12 +18,12 @@ object PlayerSessionRepo {
     fun getAttemptsRemaining(player: Player): Int {
         return uuidToAttemptsRemaining[player.uniqueId] ?: run {
             setNewPlayer(player)
-            ConfigRepo.getAttempts()
+            ConfigDataSource.getMaximumAttempts()
         }
     }
 
     fun decrementAttempt(player: Player) {
-        val newValue = max(0, uuidToAttemptsRemaining[player.uniqueId]?.dec() ?: (ConfigRepo.getAttempts() - 1))
+        val newValue = max(0, uuidToAttemptsRemaining[player.uniqueId]?.dec() ?: (ConfigDataSource.getMaximumAttempts() - 1))
         uuidToAttemptsRemaining[player.uniqueId] = newValue
     }
 }
